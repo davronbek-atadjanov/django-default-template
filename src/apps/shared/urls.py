@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.urls import path
 
-from apps.shared.views.base import HomeView
+from apps.shared.api.v1.views.base import HomeView
 
 urlpatterns = []
 

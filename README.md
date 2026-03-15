@@ -431,9 +431,9 @@ MIT — см. файл LICENSE.
 ## TODO Идеи
 
 - Пример GraphQL (Strawberry / Graphene)
-- Интеграция Sentry
-- GitHub Actions workflow пример
-- Rate limiting / throttling расширенное
 - Доп. RBAC поверх guardian/simple_history
+- Разделение API на разделы, например: client, admin.
+- Создайте отдельный файл Swagger для каждого раздела, например: swagger/admin/ , swagger/client/
+- Docker делится на два типа: для продакшена и для разработки.
 
 PR приветствуются!

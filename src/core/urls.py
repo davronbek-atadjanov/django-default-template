@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.static import serve
 
-from apps.shared.views.base import (
+from apps.shared.api.v1.views.base import (
     custom_handler400,
     custom_handler403,
     custom_handler404,
@@ -25,8 +25,8 @@ urlpatterns = (
         path("rosetta/", include("rosetta.urls")),
         path("", include("django_prometheus.urls")),
         # Media and static files
-        re_path(r"static/(?P<path>.*)", serve, {"document_root": settings.STATIC_ROOT}),
-        re_path(r"media/(?P<path>.*)", serve, {"document_root": settings.MEDIA_ROOT}),
+        re_path(r"^static/(?P<path>.*)", serve, {"document_root": settings.STATIC_ROOT}),
+        re_path(r"^media/(?P<path>.*)", serve, {"document_root": settings.MEDIA_ROOT}),
     ]
 )
 
