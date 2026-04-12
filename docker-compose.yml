@@ -1,10 +1,8 @@
-name: cargo-dev
-
 services:
   web:
     build:
       context: .
-      dockerfile: deployments/compose/backend/dev/Dockerfile
+      dockerfile: deployments/compose/backend/Dockerfile
     command: /start
     env_file:
       - .env
@@ -17,14 +15,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      pgbouncer:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
     networks:
-      - cargo_network
+      - backend_network
 
   postgres:
     image: postgres:16-alpine
@@ -43,141 +39,135 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - cargo_network
+      - backend_network
 
-  pgbouncer:
-    image: edoburu/pgbouncer:latest
-    restart: always
-    environment:
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      POOL_MODE: transaction
-      DEFAULT_POOL_SIZE: 100
-      MAX_CLIENT_CONN: 10000
-      LISTEN_PORT: 6432
-      AUTH_TYPE: scram-sha-256
-      IGNORE_STARTUP_PARAMETERS: extra_float_digits
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 6432"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - cargo_network
+#  pgbouncer:
+#    image: pgbouncer/pgbouncer:latest
+#    restart: always
+#    environment:
+#      DATABASES_AUTH_USER: ${POSTGRES_USER}
+#      DATABASES_USER: ${POSTGRES_USER}
+#      DATABASES_PASSWORD: ${POSTGRES_PASSWORD}
+#      DATABASES_DBNAME: ${POSTGRES_DB}
+#      DATABASES_HOST: ${POSTGRES_HOST}
+#      DATABASES_PORT: ${POSTGRES_PORT:-5432}
+#      PGBOUNCER_DEFAULT_POOL_SIZE: 100
+#      PGBOUNCER_MAX_CLIENT_CONN: 10000
+#      PGBOUNCER_LISTEN_PORT: ${POSTGRES_BOUNCER_PORT:-6432}
+#      PGBOUNCER_LISTEN_ADDR: "*"
+#      PGBOUNCER_LOGFILE: /var/log/pgbouncer/pgbouncer.log
+#    volumes:
+#      - pgbouncer_data:/etc/pgbouncer
+#    ports:
+#      - ${POSTGRES_BOUNCER_PORT:-6432}:6432
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#    networks:
+#      - backend_network
 
+#  redis:
+#    image: redis:7-alpine
+#    restart: always
+#    healthcheck:
+#      test: [ "CMD", "redis-cli", "ping" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    networks:
+#      - backend_network
 
-  redis:
-    image: redis:7-alpine
-    restart: always
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - cargo_network
+#  rabbitmq:
+#    image: rabbitmq:management
+#    env_file:
+#      - .env
+#    restart: always
+#    environment:
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    ports:
+#      - ${RABBITMQ_PORT:-15672}:15672
+#      - ${AMQP_PORT:-5672}:5672
+#    volumes:
+#      - rabbitmq:/var/lib/rabbitmq
+#    healthcheck:
+#      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    networks:
+#      - backend_network
 
+#  celery_worker:
+#    build:
+#      context: .
+#      dockerfile: deployments/compose/backend/Dockerfile
+#    command: /start-celeryworker
+#    env_file:
+#      - .env
+#    restart: always
+#    volumes:
+#      - ./src:/app
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - backend_network
 
-  celery_worker:
-    build:
-      context: .
-      dockerfile: deployments/compose/backend/dev/Dockerfile
-    command: /start-celeryworker
-    env_file:
-      - .env
-    restart: always
-    volumes:
-      - ./src:/app
-    depends_on:
-      postgres:
-        condition: service_healthy
-      pgbouncer:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - cargo_network
+#  celery_beat:
+#    build:
+#      context: .
+#      dockerfile: deployments/compose/backend/Dockerfile
+#    command: /start-celerybeat
+#    env_file:
+#      - .env
+#    restart: always
+#    volumes:
+#      - ./src:/app
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - backend_network
 
-  celery_beat:
-    build:
-      context: .
-      dockerfile: deployments/compose/backend/dev/Dockerfile
-    command: /start-celerybeat
-    env_file:
-      - .env
-    restart: always
-    volumes:
-      - ./src:/app
-    depends_on:
-      postgres:
-        condition: service_healthy
-      pgbouncer:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - cargo_network
-
-  minio:
-    image: minio/minio:latest
-    command: server /data --console-address ":9001"
-    env_file:
-      - .env
-    environment:
-      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minioadmin}
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: [ "CMD", "mc", "ready", "local" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - cargo_network
-
-  minio-init:
-    image: minio/mc:latest
-    depends_on:
-      minio:
-        condition: service_healthy
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 $${S3_ACCESS_KEY:-minioadmin} $${S3_SECRET_KEY:-minioadmin};
-      mc mb --ignore-existing local/$${S3_BUCKET_NAME:-cargo-media};
-      mc anonymous set download local/$${S3_BUCKET_NAME:-cargo-media};
-      cat > /tmp/cors.json << 'CORS_EOF'
-      {
-        \"CORSRules\": [
-          {
-            \"AllowedOrigins\": [\"*\"],
-            \"AllowedMethods\": [\"GET\", \"PUT\"],
-            \"AllowedHeaders\": [\"*\"],
-            \"ExposeHeaders\": [\"ETag\"]
-          }
-        ]
-      }
-      CORS_EOF
-      mc cors set local/$${S3_BUCKET_NAME:-cargo-media} < /tmp/cors.json;
-      exit 0;
-      "
-    env_file:
-      - .env
-    networks:
-      - cargo_network
-
+#  celery_flower:
+#    build:
+#      context: .
+#      dockerfile: deployments/compose/backend/Dockerfile
+#    command: /start-flower
+#    env_file:
+#      - .env
+#    restart: always
+#    volumes:
+#      - ./src:/app
+#    ports:
+#      - ${CELERY_FLOWER:-5555}:5555
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - backend_network
 
 volumes:
   pg_data:
     driver: local
-  minio_data:
-    driver: local
+#  pgbouncer_data:
+#    driver: local
+#  rabbitmq:
+#    driver: local
 
 networks:
-  cargo_network:
+  backend_network:
     driver: bridge

@@ -1,11 +1,9 @@
 from django.conf import settings
 from django.urls import path
 
-from apps.shared.api.v1.views.base import HealthCheckView, HomeView
+from apps.shared.api.v1.views.base import HomeView
 
-urlpatterns = [
-    path("api/health/", HealthCheckView.as_view(), name="health"),
-]
+urlpatterns = []
 
 if settings.DEBUG:
     urlpatterns += [

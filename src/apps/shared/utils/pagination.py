@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, Dict
 
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
@@ -89,7 +89,7 @@ class CustomPagination(PageNumberPagination):  # type: ignore[misc]
         )
 
     # drf-spectacular: provide OpenAPI schema for paginated responses
-    def get_paginated_response_schema(self, schema: dict[str, Any]) -> dict[str, Any]:
+    def get_paginated_response_schema(self, schema: Dict[str, Any]) -> Dict[str, Any]:
         """
         `schema` parameter is the OpenAPI schema for the page `data` items (e.g. serializer schema).
         Return a mapping representing the final response object schema.

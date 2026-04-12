@@ -27,19 +27,7 @@ def env_list(name: str) -> list[str]:
     return [part.strip() for part in val.split(",") if part.strip()]
 
 
-def env_or_secret(name: str, default: str = "") -> str:
-    """Read from env var first, fall back to Docker secret file at /run/secrets/."""
-    val = os.getenv(name)
-    if val:
-        return val
-    secret_path = f"/run/secrets/{name.lower()}"
-    if os.path.exists(secret_path):
-        with open(secret_path) as f:
-            return f.read().strip()
-    return default
-
-
-SECRET_KEY: str = env_or_secret("SECRET_KEY", "")
+SECRET_KEY: str = os.getenv("SECRET_KEY", "")
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY environment variable is required")
 
@@ -48,12 +36,12 @@ DEBUG: bool = env_bool("DEBUG", False)
 ALLOWED_HOSTS: list[str] = [
     "127.0.0.1",
     "localhost",
-] + env_list("EXTRA_ALLOWED_HOSTS")
+]
 
 CSRF_TRUSTED_ORIGINS: list[str] = [
     "http://127.0.0.1",
     "http://localhost",
-] + env_list("EXTRA_CSRF_ORIGINS")
+]
 
 INSTALLED_APPS = [*THIRD_PARTY_APPS, *DEFAULT_APPS, *PROJECT_APPS]
 
@@ -103,11 +91,9 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("POSTGRES_DB"),
         "USER": os.getenv("POSTGRES_USER"),
-        "PASSWORD": env_or_secret("POSTGRES_PASSWORD"),
-        "HOST": os.getenv("POSTGRES_BOUNCER_HOST", os.getenv("POSTGRES_HOST")),
-        "PORT": os.getenv("POSTGRES_BOUNCER_PORT", os.getenv("POSTGRES_PORT")),
-        "CONN_MAX_AGE": 0,
-        "DISABLE_SERVER_SIDE_CURSORS": True,
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+        "HOST": os.getenv("POSTGRES_HOST"),
+        "PORT": os.getenv("POSTGRES_PORT"),
     }
 }
 
@@ -135,16 +121,16 @@ USE_I18N = True
 USE_TZ = True
 
 LANGUAGES = (
-    ("ru", _("Russia")),
     ("en", _("English")),
-    ("kg", _("Kyrgyzstan")),
+    ("uz", _("Uzbek")),
+    ("ru", _("Russia")),
 )
 
 LOCALE_PATHS = [os.path.join(BASE_DIR, "assets/locale")]
 
-MODELTRANSLATION_LANGUAGES = ("ru", "en", "kg")
+MODELTRANSLATION_LANGUAGES = ("uz", "ru", "en")
 
-MODELTRANSLATION_DEFAULT_LANGUAGE = "ru"
+MODELTRANSLATION_DEFAULT_LANGUAGE = "uz"
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [str(BASE_DIR.joinpath("assets/static"))]
@@ -164,7 +150,7 @@ CORS_ALLOWED_ORIGINS: list[str] = [
     "http://localhost:3000",
     "http://127.0.0.1:5173",
     "http://localhost:5173",
-] + env_list("EXTRA_CORS_ORIGINS")
+]
 
 # Разрешить отправку cookies и учетных данных
 CORS_ALLOW_CREDENTIALS = True

@@ -3,7 +3,7 @@
 set -o errexit
 set -o nounset
 
-# wait for Redis server to start
+# wait for RabbitMQ server to start
 sleep 10
 
 rm -f './celerybeat.pid'

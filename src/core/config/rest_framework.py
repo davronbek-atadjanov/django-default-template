@@ -7,6 +7,16 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.ScopedRateThrottle",
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/min",
+        "user": "1000/day",
+        "story": "1000/day",
+    },
     "EXCEPTION_HANDLER": "apps.shared.exceptions.global.custom_exception_handler",
 }
 
@@ -14,6 +24,6 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
     "REDOC_DIST": "SIDECAR",
-    "TITLE": "Cargo API",
-    "DESCRIPTION": "Cargo API",
+    "TITLE": "Django Rest API",
+    "DESCRIPTION": "Django Rest API",
 }
