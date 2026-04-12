@@ -19,7 +19,7 @@ WORKDIR /app
 COPY ./pyproject.toml ./uv.lock ./
 
 # Создание и установка зависимостей сразу в /opt/venv (без перемещения)
-RUN uv sync --no-dev --frozen --no-install-project --all-groups
+RUN uv sync --no-install-project
 
 FROM python:${PYTHON_VERSION} AS app
 
@@ -30,24 +30,30 @@ ENV PYTHONBUFFERED=1 \
     VIRTUAL_ENV=/opt/venv \
     PATH=/opt/venv/bin:$PATH
 
+# Update and install necessary packages
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y gettext && \
+    apt clean && rm -rf /var/lib/apt/lists/*
+
 # Copy and set permissions for celery worker start script
-#COPY ./deployments/compose/backend/celery/worker/start /start-celeryworker
-#RUN sed -i 's/\r$//g' /start-celeryworker && chmod +x /start-celeryworker
+COPY ./deployments/compose/backend/dev/celery/worker/start /start-celeryworker
+RUN sed -i 's/\r$//g' /start-celeryworker && chmod +x /start-celeryworker
 
 # Copy and set permissions for celery beat start script
-#COPY ./deployments/compose/backend/celery/beat/start /start-celerybeat
-#RUN sed -i 's/\r$//g' /start-celerybeat && chmod +x /start-celerybeat
+COPY ./deployments/compose/backend/dev/celery/beat/start /start-celerybeat
+RUN sed -i 's/\r$//g' /start-celerybeat && chmod +x /start-celerybeat
 
 # Copy and set permissions for flower start script
-#COPY ./deployments/compose/backend/celery/flower/start /start-flower
+#COPY ./deployments/compose/backend/dev/celery/flower/start /start-flower
 #RUN sed -i 's/\r$//g' /start-flower && chmod +x /start-flower
 
 # Copy and set permissions for entrypoint script
-COPY ./deployments/compose/backend/entrypoint /entrypoint
+COPY ./deployments/compose/backend/dev/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint && chmod +x /entrypoint
 
 # Copy and set permissions for start script
-COPY ./deployments/compose/backend/start /start
+COPY ./deployments/compose/backend/dev/start /start
 RUN sed -i 's/\r$//g' /start && chmod +x /start
 
 # Копируем готовое окружение

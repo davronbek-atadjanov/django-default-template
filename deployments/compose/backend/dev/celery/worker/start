@@ -3,7 +3,7 @@
 set -o errexit
 set -o nounset
 
-echo "Waiting for RabbitMQ server to start..."
+echo "Waiting for Redis server to start..."
 
 sleep 10
 

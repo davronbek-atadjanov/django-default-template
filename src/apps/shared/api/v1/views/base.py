@@ -1,9 +1,17 @@
 from django.http import HttpRequest, JsonResponse
+from django.views import View
 from django.views.generic import TemplateView
 
 
 class HomeView(TemplateView):
     template_name = "index.html"
+
+
+class HealthCheckView(View):
+    """Lightweight health endpoint for Docker Swarm / load balancer checks."""
+
+    def get(self, request: HttpRequest) -> JsonResponse:
+        return JsonResponse({"status": "ok"})
 
 
 def custom_handler404(

@@ -1,6 +1,6 @@
 [project]
-name = "DjangoDefault"
-version = "0.0.6"
+name = "cargo_backend"
+version = "0.0.1"
 description = "A Django project with default settings and commonly used packages."
 authors = [{ name = "Jahongir Hakimjonov", email = "jahongirhakimjonov@gmail.com" }]
 readme = "README.md"
@@ -34,6 +34,14 @@ dependencies = [
     "sentry-sdk[django]>=2.39.0",
     "django-prometheus>=2.4.1",
     "prometheus-client>=0.22.0",
+    "django-storages[s3]>=1.14.4",
+    "boto3>=1.35.99",
+    "boto3-stubs~=1.42.71",
+    "celery-types>=0.26.0",
+    "firebase-admin>=6.5.0",
+    "channels==4.2.0",
+    "channels-redis==4.2.1",
+    "aioredis==2.0.1",
 ]
 
 [dependency-groups]
@@ -72,13 +80,13 @@ extend-exclude = ["*/migrations"]
 
 [tool.ruff.lint]
 select = [
-    "B",    # flake8-bugbear
-    "E",    # pycodestyle
-    "F",    # pyflakes
-    "I",    # isort
-    "S",    # bandit
-    "UP",   # pyupgrade
-    "W",    # pycodestyle warnings
+    "B", # flake8-bugbear
+    "E", # pycodestyle
+    "F", # pyflakes
+    "I", # isort
+    "S", # bandit
+    "UP", # pyupgrade
+    "W", # pycodestyle warnings
 ]
 ignore = [
     "B008", # function-call-in-default-argument

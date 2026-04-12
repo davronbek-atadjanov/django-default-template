@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+set -x
+
+# Apply Django migrations (run as one-shot task before deploying new replicas)
+python manage.py migrate --noinput
